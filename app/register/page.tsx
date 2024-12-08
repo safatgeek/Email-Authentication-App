@@ -1,6 +1,6 @@
 "use client"
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 interface FormData {
     firstName: string;
@@ -21,7 +21,20 @@ const RegisterPage = () => {
         confirmPassword: "",
     });
 
+    const [firstNameErrorMessage, setFirstNameErrorMessage] = useState<string>("")
+
+    const [lastNameErrorMessage, setLastNameErrorMessage] = useState<string>("")
+
+    const [emailErrorMessage, setEmailErrorMessage] = useState<string>("")
+
+    const [passwordErrorMessage, setPasswordErrorMessage] = useState<string>("")
+
+    const [confirmPasswordErrorMessage, setConfirmPasswordErrorMessage] = useState<string>("")
+
+    const [areAllValid, setAreAllValid] = useState<boolean>(false)
+
     const [errorMessage, setErrorMessage] = useState<string>("")
+
 
     const submitHandler = (event: FormEvent) => {
         event.preventDefault();
@@ -40,13 +53,76 @@ const RegisterPage = () => {
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
-        validedForm();
         const { name, value } = e.target;
         setFormData({
             ...formData,
             [name]: value,
         });
+        if (name == "firstName") {
+            validateFirstName(value);
+        } else if (name == "lastName") {
+            validateLastName(value);
+        } else if (name == "email") {
+            validateEmail(value)
+        } else if (name == "password") {
+            validatePassword(value)
+        } else if (name == "confirmPassword") {
+            validateConfirmPassword(value)
+        }
     };
+
+    const validateFirstName = (value: string) => {
+        if (value.trim().length >= 3) {
+            setFirstNameErrorMessage("")
+        } else {
+            setFirstNameErrorMessage("First Name must be of at least 3 characters")
+        }
+    }
+
+    const validateLastName = (value: string) => {
+        if (value.trim().length > 2) {
+            setLastNameErrorMessage("")
+        } else {
+            setLastNameErrorMessage("Last Name must be of at least 3 characters")
+        }
+    }
+
+    const validateEmail = (value: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Standard email format
+
+        if (emailRegex.test(value)) {
+            setEmailErrorMessage(""); // Clear the error message if valid
+        } else {
+            setEmailErrorMessage("Please enter a valid email address."); // Set error message if invalid
+        }
+    };
+
+    const validatePassword = (value: string) => {
+        if (value.length > 5) {
+            setPasswordErrorMessage("")
+        } else {
+            setPasswordErrorMessage("Password must be at least 6 characters !")
+        }
+    }
+
+    const validateConfirmPassword = (value: string) => {
+        if (value === formData.password) {
+            setConfirmPasswordErrorMessage("")
+        } else {
+            setConfirmPasswordErrorMessage("Password does not match !")
+        }
+    }
+
+
+    useEffect(() => {
+        if (firstNameErrorMessage || lastNameErrorMessage) {
+            setAreAllValid(false)
+        } else if (formData.firstName && formData.lastName && formData.gender && formData.email && formData.password && formData.confirmPassword) {
+            setAreAllValid(true)
+        } else {
+            setAreAllValid(false);
+        }
+    }, [formData, firstNameErrorMessage, lastNameErrorMessage, emailErrorMessage, passwordErrorMessage, confirmPasswordErrorMessage])
 
     return (
         <div className="flex flex-col h-screen w-screen justify-center items-center gap-4">
@@ -65,7 +141,9 @@ const RegisterPage = () => {
                             d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
                     </svg>
                     <input type="text" required className="grow" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" />
+
                 </label>
+                <p className="text-sm text-red-500 font-semibold">{firstNameErrorMessage}</p>
                 <label className="input input-bordered flex items-center gap-2">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -78,6 +156,8 @@ const RegisterPage = () => {
 
                     <input type="text" required className="grow" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" />
                 </label>
+                <p className="text-sm text-red-500 font-semibold">{lastNameErrorMessage}</p>
+
                 <label className="input input-bordered flex items-center gap-2">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -92,6 +172,8 @@ const RegisterPage = () => {
 
                     <input type="email" required className="grow" name="email" value={formData.email} onChange={handleChange} placeholder="Email" />
                 </label>
+                <p className="text-sm text-red-500 font-semibold">{emailErrorMessage}</p>
+
 
                 <label htmlFor="gender" className="form-control w-full">
                     <select className="select select-bordered" required id="gender" value={formData.gender} name="gender" onChange={handleChange}>
@@ -114,6 +196,8 @@ const RegisterPage = () => {
                     </svg>
                     <input type="password" required className="grow" name="password" value={formData.password} onChange={handleChange} placeholder="Password" />
                 </label>
+                <p className="text-sm text-red-500 font-semibold">{passwordErrorMessage}</p>
+
 
                 <label className="input input-bordered flex items-center gap-2">
                     <svg
@@ -128,12 +212,14 @@ const RegisterPage = () => {
                     </svg>
                     <input type="password" required className="grow" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm Password" />
                 </label>
+                <p className="text-sm text-red-500 font-semibold">{confirmPasswordErrorMessage}</p>
+
                 {
                     errorMessage && (
                         <div className="text-sm text-red-500">{errorMessage}</div>
                     )
                 }
-                <button className="btn btn-success w-full" disabled={errorMessage.length > 0}>Signup</button>
+                <button className="btn btn-success w-full" disabled={!areAllValid}>Signup</button>
             </form>
         </div>
     )
