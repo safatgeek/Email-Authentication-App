@@ -1,6 +1,10 @@
 "use client"
 
+import { auth } from "@/firebase/firebase";
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+
+import { FaGoogle } from "react-icons/fa";
 
 interface FormData {
     firstName: string;
@@ -35,13 +39,48 @@ const RegisterPage = () => {
 
     const [errorMessage, setErrorMessage] = useState<string>("")
 
+    const provider = new GoogleAuthProvider()
 
-    const submitHandler = (event: FormEvent) => {
+
+    const submitHandler = async (event: FormEvent) => {
         event.preventDefault();
         validedForm()
-        console.log(formData);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                formData.email,
+                formData.password
+            );
+
+        } catch (error) {
+            if (error instanceof Error) {
+                setErrorMessage(error.message)
+                //   if (error.message.includes("email-already-in-use")) {
+                //     setErrorMessage("Email Already Exits");
+                //   } else {
+                //     setErrorMessage(error.message);
+                //   }
+            } else {
+                setErrorMessage("An unknown errr occured");
+            }
+        }
 
     }
+
+ 
+
+    const handleGoogleLogin = async () => {
+        try {
+          const result = await signInWithPopup(auth, provider);
+          console.log("Google Login Success");
+        } catch (error) {
+          if (error instanceof Error) {
+            setErrorMessage(error.message);
+          } else {
+            setErrorMessage("An unknown error occurred");
+          }
+        }
+      };
 
     const validedForm = () => {
         setErrorMessage("")
@@ -216,11 +255,19 @@ const RegisterPage = () => {
 
                 {
                     errorMessage && (
-                        <div className="text-sm text-red-500">{errorMessage}</div>
+                        <div className="text-sm text-red-500 font-semibold">{errorMessage}</div>
                     )
                 }
                 <button className="btn btn-success w-full" disabled={!areAllValid}>Signup</button>
+
+                <div className="flex items-center gap-2 mt-2 hover:cursor-pointer m-auto" onClick={handleGoogleLogin}>
+                    <FaGoogle className="h-6 w-6"/>
+                    <p className=" text-lg font-semibold">Sign up with google</p>
+
+                </div>
             </form>
+
+
         </div>
     )
 }
