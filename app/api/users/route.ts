@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma-dev";
-import { z } from "zod";
-import { userRegistrationSchema } from "@/lib/schema/schema";
+import { NextResponse, NextRequest } from 'next/server';
+import prisma from '@/lib/prisma-dev';
+import { z } from 'zod';
+import { userRegistrationSchema } from '@/lib/schema/schema';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     // Parse and validate the request body
     const body = await req.json();
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       where: { firebaseId: validatedData.firebaseId },
     });
     if (existingUser) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 });
+      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
     // Create a new user
@@ -34,6 +34,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
 
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

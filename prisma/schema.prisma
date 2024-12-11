@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id         String   @id @map("_id") @db.ObjectId // Auto-generated MongoDB ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   firebaseId String   @unique                     // Matches Firebase userId
   name       String
   role       Role
@@ -25,7 +25,7 @@ model User {
 }
 
 model UserInfo {
-  id          String   @id @map("_id") @db.ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   firebaseId  String   @unique                     // Matches Firebase userId
   user        User     @relation(fields: [firebaseId], references: [firebaseId])
   location    String?

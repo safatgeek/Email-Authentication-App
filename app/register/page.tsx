@@ -45,7 +45,7 @@ const RegisterPage = () => {
             );
 
             // 2. Call API to create user in the backend after Firebase registration
-            const response = await fetch('/api/users/register', {
+            const response = await fetch('/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
