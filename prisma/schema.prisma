@@ -37,6 +37,7 @@ model UserInfo {
   dateOfBirth DateTime
   gender      String?
   description String?
+  isLookingFor Boolean
 }
 
 enum Role {

@@ -2,6 +2,7 @@
 
 import { auth } from "@/firebase/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 
@@ -21,6 +22,8 @@ const RegisterPage = () => {
         password: "",
         confirmPassword: "",
     });
+
+    const router = useRouter()
 
     const [nameErrorMessage, setNameErrorMessage] = useState<string>("");
     const [emailErrorMessage, setEmailErrorMessage] = useState<string>("");
@@ -55,6 +58,7 @@ const RegisterPage = () => {
                     name: formData.name,
                     role: formData.role,
                     email: formData.email,
+                    isGoogleLogin : false,
                 }),
             });
 
@@ -77,6 +81,26 @@ const RegisterPage = () => {
         try {
             const result = await signInWithPopup(auth, provider);
             console.log("Google Login Success");
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firebaseId: result.user.uid,
+                    name: result.user.displayName,
+                    role: formData.role,
+                    email: result.user.email,
+                    isGoogleLogin: true,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create user');
+            }
+
+            router.push("/dashboard")
+            console.log('User registered successfully');
         } catch (error) {
             if (error instanceof Error) {
                 setErrorMessage(error.message);
@@ -175,90 +199,124 @@ const RegisterPage = () => {
 
     return (
         <div className="flex flex-col h-screen w-screen justify-center items-center gap-4">
-            <div className=" text-4xl font-semibold">Register</div>
+            <div className="flex flex-col gap-4 items-center w-2/6">
+                <div className=" text-4xl font-semibold">Register</div>
 
-            <form className=" flex flex-col gap-2 w-2/5" onSubmit={submitHandler}>
-                {/* Form Fields (Name, Email, etc.) */}
-                <label className="input input-bordered flex items-center gap-2">
-                    <input
-                        type="text"
-                        required
-                        className="grow"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        placeholder="Name"
-                    />
-                </label>
-                <p className="text-sm text-red-500 font-semibold">{nameErrorMessage}</p>
+                <form className=" flex flex-col gap-2 w-full" onSubmit={submitHandler}>
+                    {/* Form Fields (Name, Email, etc.) */}
+                    <label className="input input-bordered flex items-center gap-2">
+                        <input
+                            type="text"
+                            required
+                            className="grow"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Name"
+                        />
+                    </label>
+                    <p className="text-sm text-red-500 font-semibold">{nameErrorMessage}</p>
 
-                <label className="input input-bordered flex items-center gap-2">
-                    <input
-                        type="email"
-                        required
-                        className="grow"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="Email"
-                    />
-                </label>
-                <p className="text-sm text-red-500 font-semibold">{emailErrorMessage}</p>
+                    <label className="input input-bordered flex items-center gap-2">
+                        <input
+                            type="email"
+                            required
+                            className="grow"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Email"
+                        />
+                    </label>
+                    <p className="text-sm text-red-500 font-semibold">{emailErrorMessage}</p>
 
-                <label htmlFor="role" className="form-control w-full">
-                    <select
-                        className="select select-bordered"
-                        required
-                        id="role"
-                        value={formData.role}
-                        name="role"
-                        onChange={handleChange}
-                    >
-                        <option value="" disabled>
-                            Role
-                        </option>
-                        <option value="TEACHER">Teacher</option>
-                        <option value="STUDENT">Student</option>
-                    </select>
-                </label>
+                    <label htmlFor="role" className="form-control w-full">
+                        <select
+                            className="select select-bordered"
+                            required
+                            id="role"
+                            value={formData.role}
+                            name="role"
+                            onChange={handleChange}
+                        >
+                            <option value="" disabled>
+                                Role
+                            </option>
+                            <option value="TEACHER">Teacher</option>
+                            <option value="STUDENT">Student</option>
+                        </select>
+                    </label>
 
-                <label className="input input-bordered flex items-center gap-2">
-                    <input
-                        type="password"
-                        required
-                        className="grow"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="Password"
-                    />
-                </label>
-                <p className="text-sm text-red-500 font-semibold">{passwordErrorMessage}</p>
+                    <label className="input input-bordered mt-2 flex items-center gap-2">
+                        <input
+                            type="password"
+                            required
+                            className="grow"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Password"
+                        />
+                    </label>
+                    <p className="text-sm text-red-500 font-semibold">{passwordErrorMessage}</p>
 
-                <label className="input input-bordered flex items-center gap-2">
-                    <input
-                        type="password"
-                        required
-                        className="grow"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        placeholder="Confirm Password"
-                    />
-                </label>
-                <p className="text-sm text-red-500 font-semibold">{confirmPasswordErrorMessage}</p>
+                    <label className="input input-bordered flex items-center gap-2">
+                        <input
+                            type="password"
+                            required
+                            className="grow"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="Confirm Password"
+                        />
+                    </label>
+                    <p className="text-sm text-red-500 font-semibold">{confirmPasswordErrorMessage}</p>
 
-                {errorMessage && <div className="text-sm text-red-500 font-semibold">{errorMessage}</div>}
+                    {errorMessage && <div className="text-sm text-red-500 font-semibold">{errorMessage}</div>}
 
-                <button className="btn btn-success w-full" disabled={!areAllValid}>
-                    Signup
-                </button>
+                    <button className="btn btn-success w-full" disabled={!areAllValid}>
+                        Signup
+                    </button>
+                </form>
 
-                <div className="flex items-center gap-2 mt-2 hover:cursor-pointer m-auto" onClick={handleGoogleLogin}>
+                <div className="flex items-center gap-2 mt-2 hover:cursor-pointer m-auto" onClick={() => {
+                    const modal = document.getElementById('my_modal_3') as HTMLDialogElement;
+                    if (modal) {
+                        modal.showModal();
+                    }
+                }}>
+                    <dialog id="my_modal_3" className="modal">
+                        <div className="modal-box">
+                            <form method="dialog">
+                                {/* if there is a button in form, it will close the modal */}
+                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                            </form>
+                            <label htmlFor="role" className="form-control w-2/3">
+                                <select
+                                    className="select select-bordered"
+                                    required
+                                    id="role"
+                                    value={formData.role}
+                                    name="role"
+                                    onChange={handleChange}
+                                >
+                                    <option value="" disabled>
+                                        Role
+                                    </option>
+                                    <option value="TEACHER">Teacher</option>
+                                    <option value="STUDENT">Student</option>
+                                </select>
+                            </label>
+
+                            <button className="btn btn-success btn-sm mt-2" onClick={handleGoogleLogin} disabled={!formData.role}>Submit</button>
+                        </div>
+                    </dialog>
                     <FaGoogle className="h-6 w-6" />
                     <p className=" text-lg font-semibold">Sign up with Google</p>
                 </div>
-            </form>
+            </div>
+
         </div>
     );
 };

@@ -13,9 +13,13 @@ export async function POST(req: NextRequest) {
     const existingUser = await prisma.user.findUnique({
       where: { firebaseId: validatedData.firebaseId },
     });
-    if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
-    }
+    if (validatedData.isGoogleLogin && existingUser) {
+      return NextResponse.json({ message: 'login Successful' }, { status: 200 });
+    } 
+
+    if (!validatedData.isGoogleLogin && existingUser) {
+      return NextResponse.json({ message: 'User already exists' }, { status: 400 });
+    } 
 
     // Create a new user
     const user = await prisma.user.create({

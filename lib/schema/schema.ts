@@ -7,4 +7,5 @@ export const userRegistrationSchema = z.object({
     message: "Invalid role",
   }),
   email: z.string().email("Invalid email address"),
+  isGoogleLogin: z.boolean()
 });
