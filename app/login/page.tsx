@@ -118,7 +118,7 @@ const loginPage = () => {
     return (
         <div className="flex flex-col h-screen w-screen justify-center items-center gap-4">
             <div className=" text-4xl font-semibold">
-                Register
+                Login
             </div>
 
             <form className=" flex flex-col gap-2 w-2/5" onSubmit={submitHandler}>
@@ -158,7 +158,7 @@ const loginPage = () => {
                         <div className="text-sm text-red-500 font-semibold">{errorMessage}</div>
                     )
                 }
-                <button className="btn btn-success w-full" disabled={!areAllValid}>Signup</button>
+                <button className="btn btn-success w-full" disabled={!areAllValid}>Signin</button>
 
                 <div className="flex items-center gap-2 mt-2 hover:cursor-pointer m-auto" onClick={handleGoogleLogin}>
                     <FaGoogle className="h-6 w-6"/>
