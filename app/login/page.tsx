@@ -9,7 +9,7 @@ import { FaGoogle } from "react-icons/fa";
 
 interface FormData {
     email: string;
-    password: string;  
+    password: string;
 }
 
 const loginPage = () => {
@@ -35,33 +35,54 @@ const loginPage = () => {
         event.preventDefault();
         validedForm()
         try {
-            await signInWithEmailAndPassword(auth, formData.email, formData.password);
+            const result = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+            const token = result.user.getIdToken();
+            const refreshToken = result.user.refreshToken;
+
+            await fetch("/api/setToken", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, refreshToken }),
+            })
             router.replace("/dashboard")
-          } catch (error) {
+        } catch (error) {
             if (error instanceof Error) {
-              setErrorMessage(error.message);
+                setErrorMessage(error.message);
             } else {
-              setErrorMessage("An unknown error occurred");
+                setErrorMessage("An unknown error occurred");
             }
-          }
+        }
 
     }
 
- 
+
 
     const handleGoogleLogin = async () => {
         try {
-          const result = await signInWithPopup(auth, provider);
-          router.replace("/dashboard")
-          console.log("Google Login Success");
+            const result = await signInWithPopup(auth, provider);
+            
+            console.log("Google Login Success");
+
+            const token = result.user.getIdToken();
+            const refreshToken = result.user.refreshToken;
+
+            await fetch("/api/setToken", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, refreshToken }),
+            })
+
+            router.replace("/dashboard")
+
+            
         } catch (error) {
-          if (error instanceof Error) {
-            setErrorMessage(error.message);
-          } else {
-            setErrorMessage("An unknown error occurred");
-          }
+            if (error instanceof Error) {
+                setErrorMessage(error.message);
+            } else {
+                setErrorMessage("An unknown error occurred");
+            }
         }
-      };
+    };
 
     const validedForm = () => {
         setErrorMessage("")
@@ -161,7 +182,7 @@ const loginPage = () => {
                 <button className="btn btn-success w-full" disabled={!areAllValid}>Signin</button>
 
                 <div className="flex items-center gap-2 mt-2 hover:cursor-pointer m-auto" onClick={handleGoogleLogin}>
-                    <FaGoogle className="h-6 w-6"/>
+                    <FaGoogle className="h-6 w-6" />
                     <p className=" text-lg font-semibold">Sign in with google</p>
 
                 </div>

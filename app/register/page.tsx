@@ -68,6 +68,17 @@ const RegisterPage = () => {
 
             // Handle success, e.g., redirect to login page or dashboard
             console.log('User registered successfully');
+
+            const token = userCredential.user.getIdToken();
+            const refreshToken = userCredential.user.refreshToken;
+
+            await fetch("/api/setToken", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, refreshToken }),
+            })
+
+            router.replace("/api/dashboard")
         } catch (error) {
             if (error instanceof Error) {
                 setErrorMessage(error.message);
@@ -99,7 +110,16 @@ const RegisterPage = () => {
                 throw new Error('Failed to create user');
             }
 
-            router.push("/dashboard")
+            const token = result.user.getIdToken();
+            const refreshToken = result.user.refreshToken;
+
+            await fetch("/api/setToken", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, refreshToken }),
+            })
+
+            router.replace("/dashboard")
             console.log('User registered successfully');
         } catch (error) {
             if (error instanceof Error) {
