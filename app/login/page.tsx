@@ -36,14 +36,6 @@ const loginPage = () => {
         validedForm()
         try {
             const result = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-            const token = result.user.getIdToken();
-            const refreshToken = result.user.refreshToken;
-
-            await fetch("/api/setToken", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, refreshToken }),
-            })
             router.replace("/dashboard")
         } catch (error) {
             if (error instanceof Error) {
@@ -62,15 +54,6 @@ const loginPage = () => {
             const result = await signInWithPopup(auth, provider);
             
             console.log("Google Login Success");
-
-            const token = result.user.getIdToken();
-            const refreshToken = result.user.refreshToken;
-
-            await fetch("/api/setToken", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, refreshToken }),
-            })
 
             router.replace("/dashboard")
 

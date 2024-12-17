@@ -3,12 +3,20 @@
 import { auth } from "@/firebase/firebase";
 import { useAuthStore } from "@/store/store";
 import { signOut } from "firebase/auth";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const Navbar = () => {
     const router = useRouter();
 
     const { isAuthenticated } = useAuthStore()
+
+    const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
+
+    const toggleMenu = () => {
+        setIsMenuOpen((prev) => !prev)
+    }
 
     const handleLogout = async () => {
 
@@ -53,8 +61,6 @@ const Navbar = () => {
                                 <li><a>Homepage</a></li>
                                 <li><a>Portfolio</a></li>
                                 <li><a>About</a></li>
-                                <li><button onClick={handleLogout}>Logout</button></li>
-
                             </ul>
 
 
@@ -65,6 +71,7 @@ const Navbar = () => {
                     <a className="btn btn-ghost text-xl">BD tution</a>
                 </div>
                 <div className="navbar-end">
+
                     <button className="btn btn-ghost btn-circle">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -79,8 +86,10 @@ const Navbar = () => {
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </button>
-                    <button className="btn btn-ghost btn-circle">
-                        {isAuthenticated && (
+
+                    {isAuthenticated && (
+                        <button className="btn btn-ghost btn-circle">
+
                             <div className="indicator">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -96,8 +105,30 @@ const Navbar = () => {
                                 </svg>
                                 <span className="badge badge-xs badge-primary indicator-item"></span>
                             </div>
-                        )}
-                    </button>
+
+                        </button>
+                    )}
+
+                    {isAuthenticated && (
+                        <div className="relative">
+                            <div className="avatar placeholder cursor-pointer" onClick={toggleMenu}>
+                                <div className="bg-neutral text-neutral-content w-12 rounded-full">
+                                    <span>SY</span>
+                                </div>
+                            </div>
+                            {isMenuOpen && (
+                                <div className=" absolute -left-44 top-14 z-50">
+                                    <div>
+                                        <ul className="menu menu-md bg-base-200 rounded-box w-56">
+                                            <li><Link href={"/profile"}>Profile</Link></li>
+                                            <li><button onClick={handleLogout}>Logout</button></li>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
