@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import DistrictPicker from "../components/DistrictPicker";
 
 
 const UserProfile = () => {
@@ -106,6 +107,8 @@ const UserProfile = () => {
                                     defaultValue="New York, USA"
                                 />
                             </div>
+
+                            <DistrictPicker />
 
                             <div className="form-control">
                                 <label className="label">
