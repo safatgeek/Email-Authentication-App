@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 
+import { IoMdArrowDropdown } from "react-icons/io";
+
 
 const DistrictPicker = () => {
 
@@ -95,25 +97,38 @@ const DistrictPicker = () => {
 
     }, [searchedDistrict])
 
-    const selectHandler = (event:React.MouseEvent<HTMLParagraphElement>) => {
+    const selectHandler = (event: React.MouseEvent<HTMLParagraphElement>) => {
         setSelectedDistrict(event.currentTarget.innerText)
+        setSearchedDistrict("")
+        setIsPopupOpened(false)
     }
 
     return (
         <div>
             <label htmlFor="district" className="form-control w-full">
                 <div className=' relative'>
-                    <p onClick={handleDistrict}>
-                        Select District
-                    </p>
+                    <div onClick={handleDistrict} className="flex justify-between items-center p-[0.65rem] border rounded border-slate-700 cursor-pointer">
+                        {!selectedDistrict && (
+                            <p>Select District</p>
+                        )}
 
-                    <p>{selectedDistrict}</p>
+                        {selectedDistrict && (
+                            <div className='flex gap-2 items-center'>
+                                <p className='text-sm text-slate-500'>District</p>
+                                <p className='text-lg'>{selectedDistrict}</p>
+
+                            </div>
+
+                        )}
+                        <IoMdArrowDropdown />
+                    </div>
 
                     {isPopupOpened && (
                         <label className="input input-bordered flex items-center gap-2">
-                            <input type="text" className="grow" placeholder="Search" onChange={(e) => {
+                            <input type="text" className="grow" placeholder="Search district" onChange={(e) => {
                                 setSearchedDistrict(e.target.value)
-                            }}/>
+
+                            }} />
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 16 16"
