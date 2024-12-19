@@ -1,11 +1,41 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import DistrictPicker from "../components/DistrictPicker";
 
-
 const UserProfile = () => {
+    const [selectedDistrict, setSelectedDistrict] = useState("")
+
+
     const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState({
+        firebaseId: "testFirebaseId123", // Replace with actual Firebase ID if available
+        name: "John Doe",
+        location: "New York, USA",
+        district: "Bay Area",
+        mobileNumber: "+1 234 567 890",
+        institution: "ABC University",
+        department: "Computer Science",
+        year: 3,
+        experience: 2,
+        dateOfBirth: "2000-01-01",
+        gender: "Male",
+        description: "Enthusiastic learner and aspiring software developer.",
+        isLookingFor: true,
+        interestedSubjects: ["Programming", "Data Structures", "Algorithms"],
+    });
+
+    const setDistrict = (district:string) => {
+        setFormData((prev) => ({ ...prev, ["district"]: district }));
+
+    }
+
+
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
     const handleEditClick = () => {
         setIsEditing(true);
@@ -13,6 +43,31 @@ const UserProfile = () => {
 
     const handleModalClose = () => {
         setIsEditing(false);
+    };
+
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+            const res = await fetch("/api/user-info", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!res.ok) {
+                throw new Error("Failed to update user info");
+            }
+
+            const data = await res.json();
+            console.log("User info updated successfully:", data);
+
+            setIsEditing(false); // Close the modal
+        } catch (error) {
+            console.error("Error updating user info:", error);
+        }
     };
 
     return (
@@ -27,9 +82,9 @@ const UserProfile = () => {
                             </div>
                         </div>
                         <div>
-                            <h2 className="card-title text-xl">John Doe</h2>
+                            <h2 className="card-title text-xl">{formData.name}</h2>
                             <p className="text-sm text-gray-500">Student</p>
-                            <p className="text-sm">johndoe@example.com</p>
+                            <p className="text-sm">{formData.description}</p>
                         </div>
                     </div>
                     <button className="btn btn-primary" onClick={handleEditClick}>
@@ -38,61 +93,22 @@ const UserProfile = () => {
                 </div>
             </div>
 
-            {/* Profile Details */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Personal Information */}
-                <div className="card bg-base-100 shadow-md">
-                    <div className="card-body">
-                        <h3 className="text-lg font-bold mb-2">Personal Information</h3>
-                        <div className="space-y-2">
-                            <p>Location: <span className="text-gray-600">New York, USA</span></p>
-                            <p>Mobile: <span className="text-gray-600">+1 234 567 890</span></p>
-                            <p>Date of Birth: <span className="text-gray-600">January 1, 2000</span></p>
-                            <p>Gender: <span className="text-gray-600">Male</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Educational/Professional Info */}
-                <div className="card bg-base-100 shadow-md">
-                    <div className="card-body">
-                        <h3 className="text-lg font-bold mb-2">Educational/Professional Information</h3>
-                        <div className="space-y-2">
-                            <p>Institution: <span className="text-gray-600">ABC University</span></p>
-                            <p>Department: <span className="text-gray-600">Computer Science</span></p>
-                            <p>Year: <span className="text-gray-600">3rd Year</span></p>
-                            <p>Experience: <span className="text-gray-600">2 years</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Additional Information */}
-            <div className="card bg-base-100 shadow-md mt-6">
-                <div className="card-body">
-                    <h3 className="text-lg font-bold mb-2">Additional Information</h3>
-                    <div className="space-y-2">
-                        <p>Description: <span className="text-gray-600">Enthusiastic learner and aspiring software developer.</span></p>
-                        <p>Looking for opportunities: <span className="text-green-600 font-bold">Yes</span></p>
-                    </div>
-                </div>
-            </div>
-
             {/* Edit Modal */}
             {isEditing && (
                 <div className="modal modal-open">
                     <div className="modal-box">
                         <h3 className="font-bold text-lg">Edit Profile</h3>
-                        <form className="space-y-4">
+                        <form className="space-y-4" onSubmit={handleFormSubmit}>
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">Name</span>
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="Enter your name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
                                     className="input input-bordered"
-                                    defaultValue="John Doe"
                                 />
                             </div>
 
@@ -102,13 +118,19 @@ const UserProfile = () => {
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="Enter your location"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
                                     className="input input-bordered"
-                                    defaultValue="New York, USA"
                                 />
                             </div>
 
-                            <DistrictPicker />
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">District</span>
+                                </label>
+                                <DistrictPicker setDistrict={setDistrict} />
+                            </div>
 
                             <div className="form-control">
                                 <label className="label">
@@ -116,119 +138,38 @@ const UserProfile = () => {
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="Enter your mobile number"
+                                    name="mobileNumber"
+                                    value={formData.mobileNumber}
+                                    onChange={handleInputChange}
                                     className="input input-bordered"
-                                    defaultValue="+1 234 567 890"
                                 />
                             </div>
+
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">Gender</span>
                                 </label>
-                                <select className="select select-bordered w-full">
+                                <select
+                                    name="gender"
+                                    value={formData.gender}
+                                    onChange={handleInputChange}
+                                    className="select select-bordered w-full"
+                                >
                                     <option>Male</option>
                                     <option>Female</option>
                                 </select>
-
                             </div>
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text">Date of birth</span>
-                                </label>
-                               <div className="flex gap-4">
-                               <input
-                                    type="text"
-                                    placeholder="Day"
-                                    className="input w-36 input-bordered"
-                                    defaultValue="21"
-                                />
-                                  <input
-                                    type="text"
-                                    placeholder="Month"
-                                    className="input w-36 input-bordered"
-                                    defaultValue="10"
-                                />
-                                  <input
-                                    type="text"
-                                    placeholder="Year"
-                                    className="input w-36 input-bordered"
-                                    defaultValue="2001"
-                                />
-                               </div>
-                            </div>
-
-                            
-
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Institution</span>
+                                    <span className="label-text">Date of Birth</span>
                                 </label>
                                 <input
-                                    type="text"
-                                    placeholder="Enter your institution"
+                                    type="date"
+                                    name="dateOfBirth"
+                                    value={formData.dateOfBirth}
+                                    onChange={handleInputChange}
                                     className="input input-bordered"
-                                    defaultValue="ABC University"
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Department</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter your department"
-                                    className="input input-bordered"
-                                    defaultValue="CSE"
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Year</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter your Year"
-                                    className="input input-bordered"
-                                    defaultValue="2nd"
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Experience</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter your Expeience"
-                                    className="input input-bordered"
-                                    defaultValue="2 years"
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Description</span>
-                                </label>
-                                <textarea
-                                    className="textarea textarea-bordered"
-                                    placeholder="Write a short description"
-                                    defaultValue="Enthusiastic learner and aspiring software developer."
-                                ></textarea>
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Email</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    className="input input-bordered"
-                                    defaultValue="johndoe@example.com"
-                                    readOnly
                                 />
                             </div>
 

@@ -4,8 +4,12 @@ import React, { useEffect, useState } from 'react'
 
 import { IoMdArrowDropdown } from "react-icons/io";
 
+interface DistrictPickerProps {
+    setDistrict: (district: string) => void;
+}
 
-const DistrictPicker = () => {
+
+const DistrictPicker:React.FC<DistrictPickerProps> = ({setDistrict}) => {
 
     const districts = [
         { name: "Bagerhat", value: "Bagerhat" },
@@ -101,6 +105,7 @@ const DistrictPicker = () => {
         setSelectedDistrict(event.currentTarget.innerText)
         setSearchedDistrict("")
         setIsPopupOpened(false)
+        setDistrict(event.currentTarget.innerText)
     }
 
     return (
@@ -113,11 +118,10 @@ const DistrictPicker = () => {
                         )}
 
                         {selectedDistrict && (
-                            <div className='flex gap-2 items-center'>
-                                <p className='text-sm text-slate-500'>District</p>
-                                <p className='text-lg'>{selectedDistrict}</p>
 
-                            </div>
+                            <p className='text-lg'>{selectedDistrict}</p>
+
+
 
                         )}
                         <IoMdArrowDropdown />
