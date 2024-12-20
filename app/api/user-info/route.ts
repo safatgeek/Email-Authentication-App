@@ -66,7 +66,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(upsertedUserInfo, { status: 200 });
   } catch (error: any) {
-    console.error("Error updating UserInfo:", error);
+    console.error("Error updating UserInfo:", error.message);
     return NextResponse.json(
       { error: "An error occurred while updating user info" },
       { status: 500 }
