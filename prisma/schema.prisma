@@ -31,9 +31,11 @@ model UserInfo {
   location     String?
   district     String
   mobileNumber String?
-  institution  String?
+  institution  String
+  institutionName String
   department   String?
   year         Int?
+  class        Int?
   experience   Int?
   dateOfBirth  DateTime
   gender       String?

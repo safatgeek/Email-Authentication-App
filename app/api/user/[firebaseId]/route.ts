@@ -16,16 +16,17 @@ export async function GET(
   }
 
   try {
-    const userInfo = await prisma.user.findUnique({
+    const userInformation= await prisma.user.findUnique({
       where: { firebaseId },
+      include: { userInfo: true }
     });
 
-    console.log(userInfo);
-    if (!userInfo) {
+    console.log(userInformation);
+    if (!userInformation) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(userInfo);
+    return NextResponse.json(userInformation);
   } catch (error: any) {
     console.error("Error fetching user info:", error.message);
     return NextResponse.json(

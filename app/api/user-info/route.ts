@@ -20,6 +20,7 @@ export async function PUT(req: NextRequest) {
       description,
       isLookingFor,
       interestedSubjects,
+      institutionName
     } = body;
 
     // Validate the required fields
@@ -46,6 +47,8 @@ export async function PUT(req: NextRequest) {
         description,
         isLookingFor,
         interestedSubjects,
+        institutionName
+
       },
       create: {
         firebaseId,
@@ -61,6 +64,7 @@ export async function PUT(req: NextRequest) {
         description,
         isLookingFor,
         interestedSubjects,
+        institutionName
       },
     });
 

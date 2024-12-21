@@ -3,8 +3,9 @@
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth  } from "@/firebase/firebase";
+import { auth } from "@/firebase/firebase";
 import { useAuthStore } from "@/store/store";
+import { fetchUser } from "@/lib/api-calls";
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,10 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
         setIsAuthenticated(false);
       } else {
         setIsAuthenticated(true);
+        //get user-info API
+
+        fetchUser(user.uid)
+
         if (pathName === "/login" || pathName === "/register") {
           router.replace("/dashboard");
         } else {
