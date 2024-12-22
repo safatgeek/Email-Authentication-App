@@ -25,22 +25,22 @@ model User {
 }
 
 model UserInfo {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  firebaseId   String   @unique // Matches Firebase userId
-  user         User     @relation(fields: [firebaseId], references: [firebaseId])
-  location     String?
-  district     String
-  mobileNumber String?
-  institution  String
-  institutionName String
-  department   String?
-  year         Int?
-  class        Int?
-  experience   Int?
-  dateOfBirth  DateTime
-  gender       String?
-  description  String?
-  isLookingFor Boolean
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  firebaseId         String   @unique // Matches Firebase userId
+  user               User     @relation(fields: [firebaseId], references: [firebaseId])
+  location           String?
+  district           String
+  mobileNumber       String?
+  institution        String
+  institutionName    String
+  department         String?
+  year               Int?
+  userClass          Int?
+  experience         Int?
+  dateOfBirth        DateTime
+  gender             String?
+  description        String?
+  isLookingFor       Boolean
   interestedSubjects String[]
 }
 

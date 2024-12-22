@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DistrictPicker from "../components/DistrictPicker";
 import { FaCheck } from "react-icons/fa";
 import { ImCross } from "react-icons/im";
@@ -11,7 +11,6 @@ const UserProfile = () => {
     const { user, userInfo } = useUserStore()
     const [isEditing, setIsEditing] = useState(false);
 
-  
 
     const [formData, setFormData] = useState({
         firebaseId: user?.firebaseId || "",
@@ -20,26 +19,40 @@ const UserProfile = () => {
         district: userInfo?.district || "",
         mobileNumber: userInfo?.mobileNumber || "",
         institution: userInfo?.institution || "",
-        class: userInfo?.class || 0,
-        institutionName: userInfo?.department || "",
-        department: "Computer Science",
-        year: 3,
-        experience: 2,
-        dateOfBirth: "2000-01-01",
-        gender: "Male", // Default value for gender
-        description: "Enthusiastic learner and aspiring software developer.",
-        isLookingFor: true,
-        interestedSubjects: ["Programming", "Data Structures", "Algorithms"],
+        userClass: userInfo?.userClass || 0,
+        institutionName: userInfo?.institutionName || "",
+        department: userInfo?.department || "",
+        year: userInfo?.year || 0,
+        experience: userInfo?.experience || 0,
+        dateOfBirth: userInfo?.dateOfBirth
+            ? new Date(userInfo.dateOfBirth).toISOString().split('T')[0] // Ensure it's YYYY-MM-DD
+            : (() => {
+                const currentDate = new Date();
+                currentDate.setFullYear(currentDate.getFullYear() - 15);
+                return currentDate.toISOString().split('T')[0]; // Default to 15 years back
+            })(),
+        gender: userInfo?.gender || "",
+        description: userInfo?.description || "",
+        isLookingFor: userInfo?.isLookingFor || false,
+        interestedSubjects: userInfo?.interestedSubjects || [],
     });
 
     const setDistrict = (district: string) => {
         setFormData((prev) => ({ ...prev, district }));
     };
 
+    function convertDateToReadableDate(date: Date) {
+        const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
+
+        return new Date(date).toLocaleDateString('en-US', options); // Formats the date as "1 January, 2001"
+    }
+
+
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         let modifiedValue: any;
-        if (name == "year" || name == "experience") {
+        if (name == "year" || name == "experience" || name == "userClass") {
             modifiedValue = Number(value)
         } else {
             modifiedValue = value
@@ -118,6 +131,68 @@ const UserProfile = () => {
                     </button>
                 </div>
             </div>
+
+            {!isEditing && (
+                <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="card bg-base-100 w-full shadow-xl">
+                        <div className="card-body">
+                            <h2 className="card-title">Educational information</h2>
+                            <p>A student of {userInfo?.institutionName}</p>
+                            <p>Institution name: {userInfo?.institutionName}</p>
+                            <div>{userInfo?.institution == "University" ? <div> <p>Department: {userInfo?.department}</p>
+                                <p className="mt-2">Year: {userInfo?.year}</p></div> : <div>
+                                <p>Class: {userInfo?.userClass}</p>
+                            </div>}</div>
+
+
+                        </div>
+
+                    </div>
+
+                    <div className="card bg-base-100 w-full shadow-xl">
+                        <div className="card-body">
+                            <h2 className="card-title">Contact</h2>
+                            <p>Location: {userInfo?.location}</p>
+                            <p>District: {userInfo?.district}</p>
+                            <p>Mobile number: {userInfo?.mobileNumber}</p>
+                        </div>
+
+                    </div>
+                    <div className="card bg-base-100 w-full shadow-xl">
+                        <div className="card-body">
+                            <h2 className="card-title">Personal information</h2>
+                            <p>Gender: {userInfo?.gender}</p>
+                            {userInfo?.dateOfBirth && (
+                                <p>Date of birth: {convertDateToReadableDate(userInfo.dateOfBirth)}</p>
+
+                            )}
+                            <p>Description: {userInfo?.description}</p>
+
+                        </div>
+
+                    </div>
+                    <div className="card bg-base-100 w-full shadow-xl">
+                        <div className="card-body">
+                            <h2 className="card-title">Want to {user?.role == "TEACHER" ? "teach" : "learn"}</h2>
+                            <div>{userInfo?.isLookingFor ? <div className="flex lg:w-2/12 items-center">
+                                <p>Availabe</p>
+                                <FaCheck className="text-green-500 w-5 h-5" />
+                            </div> : <div className="flex lg:w-2/12 items-center">
+                                <p>Not Available</p>
+                                <ImCross className="w-4 h-4 text-red-500" />
+                            </div>}</div>
+                            <p>Subjects: {userInfo?.interestedSubjects.join(", ")}</p>
+                            <p>Experience: {userInfo?.experience} {(userInfo?.experience || 0) < 2 ? "year" : "years"}</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+            )}
 
             {isEditing && (
                 <div className="modal modal-open">
@@ -291,8 +366,8 @@ const UserProfile = () => {
 
                                         <input
                                             type="number"
-                                            name="class"
-                                            value={formData.class}
+                                            name="userClass"
+                                            value={formData.userClass}
                                             onChange={handleInputChange}
                                             className="grow"
                                             placeholder="Add class"
@@ -314,8 +389,8 @@ const UserProfile = () => {
 
                                         <input
                                             type="number"
-                                            name="class"
-                                            value={formData.class}
+                                            name="userClass"
+                                            value={formData.userClass}
                                             onChange={handleInputChange}
                                             className="grow"
                                             placeholder="Add class"
@@ -377,6 +452,8 @@ const UserProfile = () => {
                                         name="gender"
                                         value={formData.gender}
                                         onChange={handleInputChange}>
+
+                                        <option value="" disabled>Select your gender</option>
                                         <option>Male</option>
                                         <option>Female</option>
                                         <option>Other</option>
