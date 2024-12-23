@@ -42,6 +42,7 @@ model UserInfo {
   description        String?
   isLookingFor       Boolean
   interestedSubjects String[]
+  profileImg         String?
 }
 
 enum Role {

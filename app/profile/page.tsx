@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import DistrictPicker from "../components/DistrictPicker";
 import { FaCheck } from "react-icons/fa";
 import { ImCross } from "react-icons/im";
 import { useUserStore } from "@/store/store";
+import { CldUploadWidget } from "next-cloudinary";
+import { MdEdit } from "react-icons/md";
+import axios from "axios";
 
 const UserProfile = () => {
 
     const { user, userInfo } = useUserStore()
     const [isEditing, setIsEditing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false)
+
+    const [image, setImage] = useState<File | null>(null)
 
 
     const [formData, setFormData] = useState({
@@ -41,13 +47,35 @@ const UserProfile = () => {
         setFormData((prev) => ({ ...prev, district }));
     };
 
-    function convertDateToReadableDate(date: Date) {
+    function convertDateToReadableDate(date: string) {
         const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
 
         return new Date(date).toLocaleDateString('en-US', options); // Formats the date as "1 January, 2001"
     }
 
 
+    const imgaeSubmitHandler = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            if (!image) return;
+
+            const formData = new FormData();
+            formData.append("image", image)
+
+            const response = await axios.post("/api/upload", formData);
+            const data = await response.data;
+
+            console.log({ data })
+        } catch (error: any) {
+            console.log("Error", error.message)
+        }
+    }
+
+    const ImgChangeHandler = (e:ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setImage(e.target.files[0])
+        }
+    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -87,7 +115,8 @@ const UserProfile = () => {
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(formData)
+
+        setIsLoading(true);
 
         try {
             const res = await fetch("/api/user-info", {
@@ -98,11 +127,18 @@ const UserProfile = () => {
                 body: JSON.stringify(formData),
             });
 
+            setIsLoading(false);
+
             if (!res.ok) {
                 throw new Error("Failed to update user info");
             }
 
+
             const data = await res.json();
+
+            const { id, ...dataWithoutId } = data
+
+            setFormData(dataWithoutId)
             console.log("User info updated successfully:", data);
 
             setIsEditing(false);
@@ -116,14 +152,21 @@ const UserProfile = () => {
             <div className="card bg-base-100 shadow-xl mb-6">
                 <div className="card-body flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        <div className="avatar">
-                            <div className="w-24 rounded-full">
+                        <div className="avatar relative">
+                            <div className="w-24 rounded-full absolute">
                                 <img src="https://via.placeholder.com/150" alt="Profile Picture" />
+
                             </div>
+                            <form className=" absolute z-50 bg-red-400" onSubmit={imgaeSubmitHandler}>
+                                <input onChange={ImgChangeHandler} type="file" id="" />
+                                <button>
+                                    <MdEdit className="h-10 w-10" /></button>
+
+                            </form>
                         </div>
                         <div>
-                            <h2 className="card-title text-xl">{formData.name}</h2>
-                            <p className="text-sm">{formData.description}</p>
+                            <h2 className="card-title text-xl">{formData?.name}</h2>
+                            <p className="text-sm">{formData?.description}</p>
                         </div>
                     </div>
                     <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
@@ -137,11 +180,11 @@ const UserProfile = () => {
                     <div className="card bg-base-100 w-full shadow-xl">
                         <div className="card-body">
                             <h2 className="card-title">Educational information</h2>
-                            <p>A student of {userInfo?.institutionName}</p>
-                            <p>Institution name: {userInfo?.institutionName}</p>
-                            <div>{userInfo?.institution == "University" ? <div> <p>Department: {userInfo?.department}</p>
-                                <p className="mt-2">Year: {userInfo?.year}</p></div> : <div>
-                                <p>Class: {userInfo?.userClass}</p>
+                            <p>A student of {formData?.institutionName}</p>
+                            <p>Institution name: {formData?.institutionName}</p>
+                            <div>{formData?.institution == "University" ? <div> <p>Department: {formData?.department}</p>
+                                <p className="mt-2">Year: {formData?.year}</p></div> : <div>
+                                <p>Class: {formData?.userClass}</p>
                             </div>}</div>
 
 
@@ -152,21 +195,21 @@ const UserProfile = () => {
                     <div className="card bg-base-100 w-full shadow-xl">
                         <div className="card-body">
                             <h2 className="card-title">Contact</h2>
-                            <p>Location: {userInfo?.location}</p>
-                            <p>District: {userInfo?.district}</p>
-                            <p>Mobile number: {userInfo?.mobileNumber}</p>
+                            <p>Location: {formData?.location}</p>
+                            <p>District: {formData?.district}</p>
+                            <p>Mobile number: {formData?.mobileNumber}</p>
                         </div>
 
                     </div>
                     <div className="card bg-base-100 w-full shadow-xl">
                         <div className="card-body">
                             <h2 className="card-title">Personal information</h2>
-                            <p>Gender: {userInfo?.gender}</p>
-                            {userInfo?.dateOfBirth && (
-                                <p>Date of birth: {convertDateToReadableDate(userInfo.dateOfBirth)}</p>
+                            <p>Gender: {formData?.gender}</p>
+                            {formData?.dateOfBirth && (
+                                <p>Date of birth: {convertDateToReadableDate(formData.dateOfBirth)}</p>
 
                             )}
-                            <p>Description: {userInfo?.description}</p>
+                            <p>Description: {formData?.description}</p>
 
                         </div>
 
@@ -174,15 +217,15 @@ const UserProfile = () => {
                     <div className="card bg-base-100 w-full shadow-xl">
                         <div className="card-body">
                             <h2 className="card-title">Want to {user?.role == "TEACHER" ? "teach" : "learn"}</h2>
-                            <div>{userInfo?.isLookingFor ? <div className="flex lg:w-2/12 items-center">
+                            <div>{formData?.isLookingFor ? <div className="flex lg:w-2/12 items-center">
                                 <p>Availabe</p>
                                 <FaCheck className="text-green-500 w-5 h-5" />
                             </div> : <div className="flex lg:w-2/12 items-center">
                                 <p>Not Available</p>
                                 <ImCross className="w-4 h-4 text-red-500" />
                             </div>}</div>
-                            <p>Subjects: {userInfo?.interestedSubjects.join(", ")}</p>
-                            <p>Experience: {userInfo?.experience} {(userInfo?.experience || 0) < 2 ? "year" : "years"}</p>
+                            <p>Subjects: {formData?.interestedSubjects?.join(", ")}</p>
+                            <p>Experience: {formData?.experience} {(formData?.experience || 0) < 2 ? "year" : "years"}</p>
 
                         </div>
 
@@ -537,8 +580,8 @@ const UserProfile = () => {
                                 <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(false)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn btn-primary">
-                                    Save
+                                <button type="submit" disabled={isLoading} className="btn btn-primary">
+                                    {isLoading ? <span className="loading loading-spinner loading-md"></span> : "Save"}
                                 </button>
                             </div>
                         </form>

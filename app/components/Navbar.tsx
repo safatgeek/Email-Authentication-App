@@ -58,7 +58,7 @@ const Navbar = () => {
                             <ul
                                 tabIndex={0}
                                 className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                                <li><a>Homepage</a></li>
+                                <li><Link href={"/"}>Home</Link></li>
                                 <li><a>Portfolio</a></li>
                                 <li><a>About</a></li>
                             </ul>
@@ -110,23 +110,26 @@ const Navbar = () => {
                     )}
 
                     {isAuthenticated && (
-                        <div className="relative">
-                            <div className="avatar placeholder cursor-pointer" onClick={toggleMenu}>
-                                <div className="bg-neutral text-neutral-content w-12 rounded-full">
-                                    <span>SY</span>
-                                </div>
-                            </div>
-                            {isMenuOpen && (
-                                <div className=" absolute -left-44 top-14 z-50">
-                                    <div>
-                                        <ul className="menu menu-md bg-base-200 rounded-box w-56">
-                                            <li><Link href={"/profile"}>Profile</Link></li>
-                                            <li><button onClick={handleLogout}>Logout</button></li>
+                        <div className="relative ml-2">
 
-                                        </ul>
+                            <div className="dropdown">
+                                <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
+                                    <div className="avatar placeholder cursor-pointer" onClick={toggleMenu}>
+                                        <div className="bg-neutral text-neutral-content w-12 rounded-full">
+                                            <span>SY</span>
+                                        </div>
                                     </div>
                                 </div>
-                            )}
+
+                                <ul
+                                    tabIndex={0}
+                                    className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow absolute -left-44 top-14">
+                                    <li><Link href={"/profile"}>Profile</Link></li>
+                                    <li><button onClick={handleLogout}>Logout</button></li>
+                                </ul>
+
+
+                            </div>
                         </div>
                     )}
                 </div>
