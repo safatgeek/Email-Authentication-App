@@ -23,7 +23,8 @@ export async function PUT(req: NextRequest) {
       description,
       isLookingFor,
       interestedSubjects,
-      institutionName
+      institutionName,
+      profileImg
     } = body;
 
     // Validate the required fields
@@ -59,7 +60,8 @@ export async function PUT(req: NextRequest) {
         description,
         isLookingFor,
         interestedSubjects,
-        institutionName
+        institutionName,
+        profileImg
 
       },
       create: {
@@ -77,7 +79,8 @@ export async function PUT(req: NextRequest) {
         description,
         isLookingFor,
         interestedSubjects,
-        institutionName
+        institutionName,
+        profileImg
       },
     });
 

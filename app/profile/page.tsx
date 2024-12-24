@@ -1,13 +1,15 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import DistrictPicker from "../components/DistrictPicker";
 import { FaCheck } from "react-icons/fa";
 import { ImCross } from "react-icons/im";
 import { useUserStore } from "@/store/store";
-import { CldUploadWidget } from "next-cloudinary";
+import { CldUploadButton, CloudinaryUploadWidgetResults } from "next-cloudinary";
 import { MdEdit } from "react-icons/md";
-import axios from "axios";
+import { RiDeleteBinLine } from "react-icons/ri";
+import { title } from "process";
+import Image from "next/image";
 
 const UserProfile = () => {
 
@@ -15,7 +17,9 @@ const UserProfile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false)
 
-    const [image, setImage] = useState<File | null>(null)
+    const [imageUrl, setImageUrl] = useState("")
+    const [publicId, setPublicId] = useState("")
+
 
 
     const [formData, setFormData] = useState({
@@ -41,6 +45,7 @@ const UserProfile = () => {
         description: userInfo?.description || "",
         isLookingFor: userInfo?.isLookingFor || false,
         interestedSubjects: userInfo?.interestedSubjects || [],
+        profileImg: userInfo?.profileImg || ""
     });
 
     const setDistrict = (district: string) => {
@@ -53,29 +58,61 @@ const UserProfile = () => {
         return new Date(date).toLocaleDateString('en-US', options); // Formats the date as "1 January, 2001"
     }
 
+    const handleImageUpload = async (result: CloudinaryUploadWidgetResults) => {
+        console.log("result: ", result);
 
-    const imgaeSubmitHandler = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        try {
-            if (!image) return;
+        const info = result.info as object;
 
-            const formData = new FormData();
-            formData.append("image", image)
+        if ("public_id" in info && "secure_url" in info) {
+            const url = info.secure_url as string;
+            const public_id = info.public_id as string;
 
-            const response = await axios.post("/api/upload", formData);
-            const data = await response.data;
+            setImageUrl(url);
+            setPublicId(public_id)
 
-            console.log({ data })
-        } catch (error: any) {
-            console.log("Error", error.message)
+            setFormData((prev) => ({
+                ...prev,
+                ["profileImg"]: url,
+
+            }));
+
         }
     }
 
-    const ImgChangeHandler = (e:ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setImage(e.target.files[0])
+    useEffect(() => {
+        const updateProfilePicture = async () => {
+            setIsLoading(true);
+            try {
+                const res = await fetch("/api/user-info", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                setIsLoading(false);
+
+                if (!res.ok) {
+                    throw new Error("Failed to update Profile Picture");
+                }
+
+                setFormData((prev) => ({ ...prev, profileImg: imageUrl }));
+
+                setIsEditing(false);
+            } catch (error) {
+                setIsLoading(false);
+                console.error("Error updating user info:", error);
+            }
+        };
+
+        if (imageUrl) {
+            updateProfilePicture();
+        } else {
+            setImageUrl(userInfo?.profileImg || "")
         }
-    }
+    }, [imageUrl]);
+
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -89,6 +126,7 @@ const UserProfile = () => {
         setFormData((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : modifiedValue,
+
         }));
     };
 
@@ -112,6 +150,24 @@ const UserProfile = () => {
             interestedSubjects: prev.interestedSubjects.filter((_, i) => i !== index),
         }));
     };
+
+    const removeImage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const res = await fetch('api/removeImage', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ publicId })
+            })
+
+            if (res.ok) {
+                setImageUrl("");
+                setPublicId("");
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -152,17 +208,28 @@ const UserProfile = () => {
             <div className="card bg-base-100 shadow-xl mb-6">
                 <div className="card-body flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        <div className="avatar relative">
-                            <div className="w-24 rounded-full absolute">
-                                <img src="https://via.placeholder.com/150" alt="Profile Picture" />
+                        <div className="avatar relative -left-28 -top-6 group/avatar">
+                            <div className="w-28 rounded-full absolute">
+                                {imageUrl && (
+                                    <Image src={imageUrl} fill className="" alt={title} />
+                                )}
 
+                                {!imageUrl && (
+                                    <img src="https://via.placeholder.com/150" />
+
+                                )}
                             </div>
-                            <form className=" absolute z-50 bg-red-400" onSubmit={imgaeSubmitHandler}>
-                                <input onChange={ImgChangeHandler} type="file" id="" />
-                                <button>
-                                    <MdEdit className="h-10 w-10" /></button>
+                            <CldUploadButton uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+                                className=" absolute z-50 left-16 top-2"
+                                onUpload={handleImageUpload}
+                                options={{
+                                    resourceType: 'image', // Ensures only images are uploaded
+                                    clientAllowedFormats: ['png', 'jpg', 'jpeg', 'gif'], // Allowed formats
+                                    cropping: true,
+                                    multiple: false,
+                                }}>{imageUrl ? <RiDeleteBinLine onClick={removeImage} className="absolute w-6 h-6 top-2 left-5 p-1 bg-error rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer" /> : <MdEdit className="absolute w-6 h-6 top-2 left-5 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer" />}</CldUploadButton>
 
-                            </form>
+
                         </div>
                         <div>
                             <h2 className="card-title text-xl">{formData?.name}</h2>
